@@ -65,11 +65,17 @@ export default function AuthPage() {
 
       const phoneNumber = `+91${phone}`;
       
-      if (!(window as any).recaptchaVerifier) {
-        (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-          size: 'invisible',
-        });
+      // Clear and recreate verifier
+      if ((window as any).recaptchaVerifier) {
+        try {
+          (window as any).recaptchaVerifier.clear();
+        } catch (e) {}
       }
+      
+      (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        size: 'invisible',
+        callback: () => console.log('reCAPTCHA solved'),
+      });
       
       const appVerifier = (window as any).recaptchaVerifier;
       const result = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
@@ -78,15 +84,18 @@ export default function AuthPage() {
       alert("OTP sent successfully!");
     } catch (error: any) {
       console.error('Send OTP error:', error);
+      console.error('Error code:', error.code);
       
-      // Fallback to demo mode if Firebase fails
-      if (error.code === 'auth/internal-error' || error.code === 'auth/invalid-app-credential') {
-        console.log('Using demo mode');
-        setStep("otp");
-        alert("Demo Mode: Use any 6-digit OTP");
+      let errorMsg = "Failed to send OTP. ";
+      if (error.code === 'auth/internal-error') {
+        errorMsg += "Please enable Phone Authentication in Firebase Console: Authentication → Sign-in method → Phone.";
+      } else if (error.code === 'auth/invalid-app-credential') {
+        errorMsg += "Invalid Firebase credentials. Check your Firebase configuration.";
       } else {
-        alert(error.message || "Failed to send OTP. Please try again.");
+        errorMsg += error.message;
       }
+      
+      alert(errorMsg);
       
       if ((window as any).recaptchaVerifier) {
         try {
@@ -105,14 +114,15 @@ export default function AuthPage() {
       return;
     }
 
+    if (!confirmationResult) {
+      alert("Please request OTP first");
+      return;
+    }
+
     setIsLoading(true);
     
     try {
-      // Try Firebase verification if available
-      if (confirmationResult) {
-        await confirmationResult.confirm(otp);
-      }
-      // Otherwise accept any OTP (demo mode)
+      await confirmationResult.confirm(otp);
       
       if (mode === "register") {
         const existingUser = localStorage.getItem(`melody_user_${phone}`);
