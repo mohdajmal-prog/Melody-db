@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Sprout, ArrowLeft, Lock, ShieldCheck, UserPlus } from "lucide-react";
+import { Sprout, ArrowLeft, ShieldCheck, UserPlus } from "lucide-react";
 import Link from "next/link";
-import { auth } from '@/lib/firebase';
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
+import { toast } from "sonner";
+import { auth } from "@/lib/firebase";
+import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from "firebase/auth";
 
 export default function AuthPage() {
   const router = useRouter();
@@ -17,21 +18,42 @@ export default function AuthPage() {
   const [step, setStep] = useState<"phone" | "otp" | "details">("phone");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
+  const [generatedOtp, setGeneratedOtp] = useState("");
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && !(window as any).recaptchaVerifier) {
+    if (typeof window !== 'undefined') {
+      if ((window as any).recaptchaVerifier) {
+        try {
+          (window as any).recaptchaVerifier.clear();
+        } catch (e) {}
+      }
+      
       try {
         (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
           size: 'invisible',
+          callback: (response: any) => {
+            console.log('reCAPTCHA solved:', response);
+          },
+          'expired-callback': () => {
+            console.log('reCAPTCHA expired');
+          }
         });
       } catch (error) {
-        console.error('reCAPTCHA error:', error);
+        console.error('reCAPTCHA initialization error:', error);
       }
     }
+    
+    return () => {
+      if ((window as any).recaptchaVerifier) {
+        try {
+          (window as any).recaptchaVerifier.clear();
+        } catch (e) {}
+      }
+    };
   }, []);
 
   const handleSendOTP = async () => {
@@ -42,58 +64,54 @@ export default function AuthPage() {
 
     setIsLoading(true);
     
+    const existingUser = localStorage.getItem(`melody_user_${phone}`);
+    
+    if (mode === "login" && !existingUser) {
+      alert("Phone number not registered. Please register first.");
+      setMode("register");
+      setIsLoading(false);
+      return;
+    }
+    
     try {
-      const existingUser = localStorage.getItem(`melody_user_${phone}`);
-      if (mode === "login" && !existingUser) {
-        alert("Phone number not registered. Please register first.");
-        setMode("register");
-        setIsLoading(false);
-        return;
-      }
-
       const phoneNumber = `+91${phone}`;
+      const appVerifier = (window as any).recaptchaVerifier;
       
-      // Clear and recreate verifier
-      if ((window as any).recaptchaVerifier) {
-        try {
-          (window as any).recaptchaVerifier.clear();
-        } catch (e) {}
+      if (!appVerifier) {
+        throw new Error('reCAPTCHA not initialized');
       }
       
-      (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        size: 'invisible',
-        callback: () => console.log('reCAPTCHA solved'),
-      });
-      
-      const appVerifier = (window as any).recaptchaVerifier;
       const result = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
       setConfirmationResult(result);
       setStep("otp");
-      alert("OTP sent successfully!");
+      
+      toast.success('OTP sent to your phone!', {
+        duration: 5000,
+        position: "top-center",
+      });
     } catch (error: any) {
       console.error('Send OTP error:', error);
-      console.error('Error code:', error.code);
-      
-      let errorMsg = "Failed to send OTP. ";
-      if (error.code === 'auth/internal-error') {
-        errorMsg += "Please enable Phone Authentication in Firebase Console: Authentication → Sign-in method → Phone.";
-      } else if (error.code === 'auth/invalid-app-credential') {
-        errorMsg += "Invalid Firebase credentials. Check your Firebase configuration.";
+      let errorMsg = 'Failed to send OTP. ';
+      if (error.code === 'auth/invalid-app-credential') {
+        errorMsg += 'Add test phone numbers in Firebase Console: Authentication → Sign-in method → Phone → Phone numbers for testing';
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMsg += 'Too many requests. Please try again later.';
       } else {
         errorMsg += error.message;
       }
-      
       alert(errorMsg);
       
       if ((window as any).recaptchaVerifier) {
         try {
           (window as any).recaptchaVerifier.clear();
+          (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+            size: 'invisible',
+          });
         } catch (e) {}
-        (window as any).recaptchaVerifier = null;
       }
-    } finally {
-      setIsLoading(false);
     }
+    
+    setIsLoading(false);
   };
 
   const handleVerifyOTP = async () => {
@@ -112,30 +130,54 @@ export default function AuthPage() {
     try {
       await confirmationResult.confirm(otp);
       
-      if (mode === "register") {
-        const existingUser = localStorage.getItem(`melody_user_${phone}`);
-        if (!existingUser) {
-          setStep("details");
-          setIsLoading(false);
-          return;
+      if (mode === "login") {
+        const userData = localStorage.getItem(`melody_user_${phone}`);
+        if (userData) {
+          localStorage.setItem("melody_current_user", userData);
+          router.push("/customer");
         }
-      }
-
-      const userData = localStorage.getItem(`melody_user_${phone}`);
-      if (userData) {
-        localStorage.setItem("melody_current_user", userData);
-        router.push("/customer");
       } else {
-        alert("User not found. Please register.");
-        setMode("register");
-        setStep("phone");
+        setStep("details");
       }
     } catch (error: any) {
       console.error('Verify OTP error:', error);
       alert("Invalid OTP. Please try again.");
-    } finally {
-      setIsLoading(false);
     }
+    
+    setIsLoading(false);
+  };
+
+  const handleContinue = async () => {
+    if (phone.length !== 10) {
+      alert("Please enter a valid 10-digit phone number");
+      return;
+    }
+
+    setIsLoading(true);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    
+    const existingUser = localStorage.getItem(`melody_user_${phone}`);
+    
+    if (mode === "login") {
+      if (!existingUser) {
+        alert("Phone number not registered. Please register first.");
+        setMode("register");
+        setIsLoading(false);
+        return;
+      }
+      localStorage.setItem("melody_current_user", existingUser);
+      router.push("/customer");
+    } else {
+      if (existingUser) {
+        alert("Phone number already registered. Please login.");
+        setMode("login");
+        setIsLoading(false);
+        return;
+      }
+      setStep("details");
+    }
+    
+    setIsLoading(false);
   };
 
   const handleRegister = async () => {
@@ -171,38 +213,39 @@ export default function AuthPage() {
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: "url('https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=7680&auto=format&fit=crop')",
+          backgroundImage: "url('https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=7680&auto=format&fit=crop')",
         }}
       />
-      <div className="absolute inset-0 bg-gradient-to-br from-green-900/90 via-green-800/85 to-emerald-700/80" />
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-900/70 via-gray-800/60 to-gray-700/50" />
       
       {/* Floating Elements */}
       <div className="absolute top-20 left-10 w-32 h-32 bg-white/5 rounded-full blur-2xl" />
       <div className="absolute bottom-20 right-10 w-40 h-40 bg-white/5 rounded-full blur-2xl" />
 
-      <div className="relative z-10 w-full max-w-md">
+      <div className="relative z-10 w-full max-w-[280px]">
         <div id="recaptcha-container"></div>
+
         <Card className="shadow-2xl border border-gray-100 bg-white overflow-hidden">
           {/* Header with White Background */}
-          <div className="bg-gradient-to-b from-gray-50 to-white p-4 border-b border-gray-100">
+          <div className="bg-gradient-to-b from-gray-50 to-white p-2 border-b border-gray-100">
             <Link href="/">
               <Button variant="ghost" size="icon" className="mb-2 hover:bg-gray-100 rounded-full">
                 <ArrowLeft className="h-4 w-4 text-gray-600" />
               </Button>
             </Link>
 
-            <div className="flex flex-col items-center justify-center gap-2 mb-3">
-              <div className="bg-gradient-to-br from-green-500 to-green-600 p-2 rounded-2xl shadow-lg">
-                <Sprout className="h-6 w-6 text-white" />
+            <div className="flex flex-col items-center justify-center gap-1 mb-1.5">
+              <div className="bg-gradient-to-br from-green-500 to-green-600 p-1 rounded-lg shadow-lg">
+                <Sprout className="h-4 w-4 text-white" />
               </div>
-              <span className="text-xl font-semibold text-gray-900 tracking-tight">Melody</span>
+              <span className="text-base font-semibold text-gray-900 tracking-tight">Melody</span>
             </div>
 
             <div className="text-center">
-              <h1 className="text-lg font-semibold mb-1 text-gray-900">
+              <h1 className="text-sm font-semibold mb-0 text-gray-900">
                 {mode === "login" ? "Welcome Back" : "Create Account"}
               </h1>
-              <p className="text-gray-500 text-xs leading-relaxed">
+              <p className="text-gray-500 text-[10px] leading-relaxed">
                 {mode === "login"
                   ? "Sign in to access your account"
                   : "Join us to get fresh products delivered"}
@@ -210,14 +253,14 @@ export default function AuthPage() {
             </div>
           </div>
 
-          <CardContent className="space-y-4 p-5">
+          <CardContent className="space-y-2.5 p-3">
             {step === "phone" && (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-sm font-medium text-gray-700">Phone Number</Label>
-                  <div className="flex gap-3">
-                    <div className="flex items-center justify-center bg-gray-50 px-4 rounded-lg border border-gray-200">
-                      <span className="text-sm font-semibold text-gray-700">+91</span>
+                  <Label htmlFor="phone" className="text-xs font-medium text-gray-700">Phone Number</Label>
+                  <div className="flex gap-2">
+                    <div className="flex items-center justify-center bg-gray-50 px-2.5 rounded-lg border border-gray-200">
+                      <span className="text-xs font-semibold text-gray-700">+91</span>
                     </div>
                     <Input
                       id="phone"
@@ -228,7 +271,7 @@ export default function AuthPage() {
                       onChange={(e) =>
                         setPhone(e.target.value.replace(/\D/g, ""))
                       }
-                      className="flex-1 h-11 text-base border border-gray-300 focus:border-green-600 focus:ring-1 focus:ring-green-600 rounded-lg transition-all"
+                      className="flex-1 h-9 text-sm border border-gray-300 focus:border-green-600 focus:ring-1 focus:ring-green-600 rounded-lg transition-all"
                     />
                   </div>
                 </div>
@@ -236,12 +279,12 @@ export default function AuthPage() {
                 <Button
                   onClick={handleSendOTP}
                   disabled={isLoading || phone.length !== 10}
-                  className="w-full h-11 text-sm font-medium bg-green-600 hover:bg-green-700 shadow-sm hover:shadow transition-all disabled:opacity-50 disabled:cursor-not-allowed rounded-lg"
+                  className="w-full h-9 text-xs font-medium bg-green-600 hover:bg-green-700 shadow-sm hover:shadow transition-all disabled:opacity-50 disabled:cursor-not-allowed rounded-lg"
                 >
-                  {isLoading ? "Sending..." : "Continue with Phone"}
+                  {isLoading ? "Sending OTP..." : "Send OTP"}
                 </Button>
 
-                <div className="relative my-4">
+                <div className="relative my-2">
                   <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t border-gray-200" />
                   </div>
@@ -254,10 +297,10 @@ export default function AuthPage() {
 
                 <Button
                   variant="outline"
-                  className="w-full gap-2 h-11 border border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all rounded-lg"
+                  className="w-full gap-2 h-9 border border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all rounded-lg"
                   onClick={() => alert("Google login not implemented in demo")}
                 >
-                  <svg className="h-5 w-5" viewBox="0 0 24 24">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24">
                     <path
                       fill="#4285F4"
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -275,11 +318,11 @@ export default function AuthPage() {
                       d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                     />
                   </svg>
-                  <span className="font-medium text-sm">Continue with Google</span>
+                  <span className="font-medium text-xs">Continue with Google</span>
                 </Button>
 
-                <div className="text-center pt-1">
-                  <p className="text-sm text-gray-600">
+                <div className="text-center pt-0">
+                  <p className="text-xs text-gray-600">
                     {mode === "login"
                       ? "Don't have an account?"
                       : "Already have an account?"}
@@ -287,7 +330,7 @@ export default function AuthPage() {
                       onClick={() =>
                         setMode(mode === "login" ? "register" : "login")
                       }
-                      className="ml-1.5 text-green-600 font-semibold hover:text-green-700 hover:underline transition-all"
+                      className="ml-1 text-green-600 font-semibold hover:text-green-700 hover:underline transition-all"
                     >
                       {mode === "login" ? "Sign up" : "Sign in"}
                     </button>
@@ -299,25 +342,18 @@ export default function AuthPage() {
             {step === "otp" && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="otp" className="text-sm font-medium text-gray-700">Verification Code</Label>
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center bg-gray-50 p-2.5 rounded-lg border border-gray-200">
-                      <Lock className="h-5 w-5 text-gray-600" />
-                    </div>
-                    <Input
-                      id="otp"
-                      type="text"
-                      placeholder="000000"
-                      maxLength={6}
-                      value={otp}
-                      onChange={(e) =>
-                        setOtp(e.target.value.replace(/\D/g, ""))
-                      }
-                      className="flex-1 text-center text-lg tracking-[0.5em] border border-gray-300 focus:border-green-600 focus:ring-1 focus:ring-green-600 rounded-lg transition-all font-mono"
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    Code sent to +91 {phone}
+                  <Label htmlFor="otp" className="text-xs font-medium text-gray-700">Enter OTP</Label>
+                  <Input
+                    id="otp"
+                    type="text"
+                    placeholder="000000"
+                    maxLength={6}
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                    className="h-9 text-center text-base tracking-widest border border-gray-300 focus:border-green-600 focus:ring-1 focus:ring-green-600 rounded-lg transition-all font-mono"
+                  />
+                  <p className="text-[10px] text-gray-500">
+                    OTP sent to {`+91${phone}`}
                     <button
                       onClick={() => setStep("phone")}
                       className="ml-2 text-green-600 font-medium hover:underline"
@@ -330,19 +366,55 @@ export default function AuthPage() {
                 <Button
                   onClick={handleVerifyOTP}
                   disabled={isLoading || otp.length !== 6}
-                  className="w-full h-11 bg-green-600 hover:bg-green-700 transition-all rounded-lg"
-                  size="lg"
+                  className="w-full h-9 bg-green-600 hover:bg-green-700 transition-all rounded-lg text-xs"
                 >
-                  {isLoading ? "Verifying..." : "Verify & Continue"}
+                  {isLoading ? "Verifying..." : "Verify OTP"}
                 </Button>
 
                 <Button
                   variant="ghost"
-                  onClick={handleSendOTP}
+                  onClick={() => {
+                    const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
+                    setGeneratedOtp(newOtp);
+                    const fullPhoneNumber = `+91${phone}`;
+                    
+                    const welcomeMessage = mode === "login" 
+                      ? "Welcome Back! 👋" 
+                      : "Welcome to Melody! 🌱";
+                    
+                    toast(
+                      <div className="flex flex-col gap-0 text-[13px] leading-tight">
+                        <div className="font-semibold text-gray-900 mb-1">Melody</div>
+                        <div className="text-gray-700">
+                          Your OTP is <span className="font-bold text-gray-900">{newOtp}</span>. Valid for 10 minutes. Do not share this code with anyone.
+                        </div>
+                        <div className="text-[11px] text-gray-500 mt-1.5 pt-1.5 border-t border-gray-200">
+                          {fullPhoneNumber} • {new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </div>,
+                      {
+                        duration: 10000,
+                        position: "top-center" as const,
+                        style: {
+                          background: 'white',
+                          border: '1px solid #e5e7eb',
+                          padding: '12px 16px',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                          maxWidth: '280px',
+                          marginTop: '20px',
+                          marginLeft: 'auto',
+                          marginRight: 'auto',
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                        },
+                      }
+                    );
+                  }}
                   className="w-full text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                   size="sm"
                 >
-                  Resend Code
+                  Resend OTP
                 </Button>
               </>
             )}
@@ -351,26 +423,26 @@ export default function AuthPage() {
               <>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name" className="text-sm font-medium text-gray-700">Full Name</Label>
+                    <Label htmlFor="name" className="text-xs font-medium text-gray-700">Full Name</Label>
                     <Input
                       id="name"
                       type="text"
                       placeholder="Enter your full name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="h-11 border border-gray-300 focus:border-green-600 focus:ring-1 focus:ring-green-600 transition-all rounded-lg"
+                      className="h-9 border border-gray-300 focus:border-green-600 focus:ring-1 focus:ring-green-600 transition-all rounded-lg text-sm"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="address" className="text-sm font-medium text-gray-700">Delivery Address</Label>
+                    <Label htmlFor="address" className="text-xs font-medium text-gray-700">Delivery Address</Label>
                     <Input
                       id="address"
                       type="text"
                       placeholder="House no, Street, Area, City"
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
-                      className="h-11 border border-gray-300 focus:border-green-600 focus:ring-1 focus:ring-green-600 transition-all rounded-lg"
+                      className="h-9 border border-gray-300 focus:border-green-600 focus:ring-1 focus:ring-green-600 transition-all rounded-lg text-sm"
                     />
                   </div>
                 </div>
@@ -378,16 +450,16 @@ export default function AuthPage() {
                 <Button
                   onClick={handleRegister}
                   disabled={isLoading}
-                  className="w-full h-11 bg-green-600 hover:bg-green-700 transition-all rounded-lg"
+                  className="w-full h-9 bg-green-600 hover:bg-green-700 transition-all rounded-lg text-xs"
                   size="lg"
                 >
-                  <UserPlus className="h-4 w-4 mr-2" />
+                  <UserPlus className="h-3 w-3 mr-1.5" />
                   {isLoading ? "Creating Account..." : "Create Account"}
                 </Button>
               </>
             )}
 
-            {step === "roles" && (
+            {step === "unused" && (
               <>
                 <div className="space-y-4">
                   <div className="text-center mb-4">
@@ -492,9 +564,9 @@ export default function AuthPage() {
               </>
             )}
 
-            <div className="flex items-center justify-center gap-2 pt-3 border-t border-gray-100">
-              <ShieldCheck className="h-4 w-4 text-gray-400" />
-              <span className="text-xs text-gray-500 font-medium">
+            <div className="flex items-center justify-center gap-1.5 pt-1.5 border-t border-gray-100">
+              <ShieldCheck className="h-3 w-3 text-gray-400" />
+              <span className="text-[10px] text-gray-500 font-medium">
                 Secure & Encrypted
               </span>
             </div>

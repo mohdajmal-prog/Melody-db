@@ -1,6 +1,7 @@
 import type React from "react";
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import { Toaster } from "sonner";
 import "./globals.css";
 import UnhandledRejectionLogger from "./components/diagnostics/unhandled-rejection";
 
@@ -35,10 +36,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <script src="https://www.gstatic.com/firebasejs/ui/6.0.1/firebase-ui-auth.js" async defer></script>
-      </head>
       <body className={`font-sans antialiased`}>
+        <Toaster richColors />
         {children}
         <Analytics />
         {/* Diagnostics: log unhandledrejection and window errors to console */}

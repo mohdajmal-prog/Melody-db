@@ -157,9 +157,9 @@ export default function CustomerPage() {
   ];
 
   const byProducts = [
-    { id: "meat", name: "Meats", image: "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=400&h=300&fit=crop", bgColor: "#d1f4e0", items: ["Ready to Cook Mutton", "Ready to Cook Chicken", "Marinated Meat", "Curry Cut Meat"] },
-    { id: "vegetables", name: "Vegetables", image: "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=400&h=300&fit=crop", bgColor: "#d1f4e0", items: ["Dried Tomatoes", "Dried Leafy Greens", "Dehydrated Vegetables", "Sun-Dried Veggies"] },
-    { id: "dried-fruits", name: "Dried Fruits", image: "https://images.unsplash.com/photo-1559181567-c3190ca9959b?w=400&h=300&fit=crop", bgColor: "#d1f4e0" },
+    { id: "meat", name: "Meats", image: "/meat-product.jpeg", bgColor: "#d1f4e0", items: ["Ready to Cook Mutton", "Ready to Cook Chicken", "Marinated Meat", "Curry Cut Meat"] },
+    { id: "vegetables", name: "Vegetables", image: "/veg.jpeg", bgColor: "#d1f4e0", items: ["Dried Tomatoes", "Dried Leafy Greens", "Dehydrated Vegetables", "Sun-Dried Veggies"] },
+    { id: "dried-fruits", name: "Dried Fruits", image: "/fruits.jpeg", bgColor: "#d1f4e0" },
     { id: "eggs", name: "Country Eggs", image: "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=400&h=300&fit=crop", bgColor: "#d1f4e0" },
     { id: "dried-fish", name: "Dried Fish", image: "https://images.unsplash.com/photo-1534604973900-c43ab4c2e0ab?w=400&h=300&fit=crop", bgColor: "#d1f4e0" },
     { id: "dairy", name: "Dairy Products", image: "https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=400&h=300&fit=crop", bgColor: "#d1f4e0", items: ["Organic Ghee", "Fresh Paneer", "Natural Yogurt", "Farm Cheese", "Fresh Butter", "Buttermilk"] },
