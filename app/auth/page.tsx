@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,6 +8,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Sprout, ArrowLeft, Lock, ShieldCheck, UserPlus } from "lucide-react";
 import Link from "next/link";
+import { initializeApp, getApps } from 'firebase/app';
+import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
+
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+};
+
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
+const auth = getAuth(app);
 
 export default function AuthPage() {
   const router = useRouter();
@@ -18,6 +32,19 @@ export default function AuthPage() {
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !(window as any).recaptchaVerifier) {
+      try {
+        (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+          size: 'invisible',
+        });
+      } catch (error) {
+        console.error('reCAPTCHA error:', error);
+      }
+    }
+  }, []);
 
   const handleSendOTP = async () => {
     if (phone.length !== 10) {
@@ -26,21 +53,39 @@ export default function AuthPage() {
     }
 
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
     
-    const existingUser = localStorage.getItem(`melody_user_${phone}`);
-    if (mode === "login" && !existingUser) {
-      alert("Phone number not registered. Please register first.");
-      setMode("register");
+    try {
+      const existingUser = localStorage.getItem(`melody_user_${phone}`);
+      if (mode === "login" && !existingUser) {
+        alert("Phone number not registered. Please register first.");
+        setMode("register");
+        setIsLoading(false);
+        return;
+      }
+
+      const phoneNumber = `+91${phone}`;
+      
+      if (!(window as any).recaptchaVerifier) {
+        (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+          size: 'invisible',
+        });
+      }
+      
+      const appVerifier = (window as any).recaptchaVerifier;
+      const result = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
+      setConfirmationResult(result);
+      setStep("otp");
+      alert("OTP sent successfully!");
+    } catch (error: any) {
+      console.error('Send OTP error:', error);
+      alert(error.message || "Failed to send OTP. Please try again.");
+      if ((window as any).recaptchaVerifier) {
+        (window as any).recaptchaVerifier.clear();
+        (window as any).recaptchaVerifier = null;
+      }
+    } finally {
       setIsLoading(false);
-      return;
     }
-    
-    const mockOTP = "123456";
-    console.log('Demo mode: OTP is', mockOTP);
-    setStep("otp");
-    alert(`Demo Mode: Use any 6-digit OTP`);
-    setIsLoading(false);
   };
 
   const handleVerifyOTP = async () => {
@@ -49,29 +94,40 @@ export default function AuthPage() {
       return;
     }
 
-    setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    
-    if (mode === "register") {
-      const existingUser = localStorage.getItem(`melody_user_${phone}`);
-      if (!existingUser) {
-        setStep("details");
-        setIsLoading(false);
-        return;
-      }
+    if (!confirmationResult) {
+      alert("Please request OTP first");
+      return;
     }
 
-    const userData = localStorage.getItem(`melody_user_${phone}`);
-    if (userData) {
-      localStorage.setItem("melody_current_user", userData);
-      router.push("/customer");
-    } else {
-      alert("User not found. Please register.");
-      setMode("register");
-      setStep("phone");
-    }
+    setIsLoading(true);
     
-    setIsLoading(false);
+    try {
+      await confirmationResult.confirm(otp);
+      
+      if (mode === "register") {
+        const existingUser = localStorage.getItem(`melody_user_${phone}`);
+        if (!existingUser) {
+          setStep("details");
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      const userData = localStorage.getItem(`melody_user_${phone}`);
+      if (userData) {
+        localStorage.setItem("melody_current_user", userData);
+        router.push("/customer");
+      } else {
+        alert("User not found. Please register.");
+        setMode("register");
+        setStep("phone");
+      }
+    } catch (error: any) {
+      console.error('Verify OTP error:', error);
+      alert("Invalid OTP. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleRegister = async () => {
@@ -117,6 +173,7 @@ export default function AuthPage() {
       <div className="absolute bottom-20 right-10 w-40 h-40 bg-white/5 rounded-full blur-2xl" />
 
       <div className="relative z-10 w-full max-w-md">
+        <div id="recaptcha-container"></div>
         <Card className="shadow-2xl border border-gray-100 bg-white overflow-hidden">
           {/* Header with White Background */}
           <div className="bg-gradient-to-b from-gray-50 to-white p-4 border-b border-gray-100">
