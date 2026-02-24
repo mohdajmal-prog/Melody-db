@@ -1,57 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Sprout, ArrowLeft, Lock, ShieldCheck, UserPlus } from "lucide-react";
 import Link from "next/link";
-import { initializeApp } from 'firebase/app';
-import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
-
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 
 export default function AuthPage() {
   const router = useRouter();
-
   const [mode, setMode] = useState<"login" | "register">("login");
-  const [step, setStep] = useState<"phone" | "otp" | "details" | "roles">(
-    "phone"
-  );
+  const [step, setStep] = useState<"phone" | "otp" | "details">("phone");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
-  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // Clear any existing verifier
-      if ((window as any).recaptchaVerifier) {
-        try {
-          (window as any).recaptchaVerifier.clear();
-        } catch (e) {}
-        (window as any).recaptchaVerifier = null;
-      }
-    }
-  }, []);
 
   const handleSendOTP = async () => {
     if (phone.length !== 10) {
@@ -60,27 +26,21 @@ export default function AuthPage() {
     }
 
     setIsLoading(true);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     
-    try {
-      const existingUser = localStorage.getItem(`melody_user_${phone}`);
-      if (mode === "login" && !existingUser) {
-        alert("Phone number not registered. Please register first.");
-        setMode("register");
-        setIsLoading(false);
-        return;
-      }
-
-      // For demo: bypass Firebase and use mock OTP
-      const mockOTP = "123456";
-      console.log('Demo mode: OTP is', mockOTP);
-      setStep("otp");
-      alert(`Demo Mode: Use OTP ${mockOTP}`);
-    } catch (error: any) {
-      console.error('Full error:', error);
-      alert("Failed to send OTP. " + error.message);
-    } finally {
+    const existingUser = localStorage.getItem(`melody_user_${phone}`);
+    if (mode === "login" && !existingUser) {
+      alert("Phone number not registered. Please register first.");
+      setMode("register");
       setIsLoading(false);
+      return;
     }
+    
+    const mockOTP = "123456";
+    console.log('Demo mode: OTP is', mockOTP);
+    setStep("otp");
+    alert(`Demo Mode: Use any 6-digit OTP`);
+    setIsLoading(false);
   };
 
   const handleVerifyOTP = async () => {
@@ -90,34 +50,28 @@ export default function AuthPage() {
     }
 
     setIsLoading(true);
+    await new Promise((resolve) => setTimeout(resolve, 500));
     
-    try {
-      // Demo mode: accept any 6-digit OTP
-      
-      if (mode === "register") {
-        const existingUser = localStorage.getItem(`melody_user_${phone}`);
-        if (!existingUser) {
-          setStep("details");
-          setIsLoading(false);
-          return;
-        }
+    if (mode === "register") {
+      const existingUser = localStorage.getItem(`melody_user_${phone}`);
+      if (!existingUser) {
+        setStep("details");
+        setIsLoading(false);
+        return;
       }
-
-      const userData = localStorage.getItem(`melody_user_${phone}`);
-      if (userData) {
-        localStorage.setItem("melody_current_user", userData);
-        router.push("/customer");
-      } else {
-        alert("User not found. Please register.");
-        setMode("register");
-        setStep("phone");
-      }
-    } catch (error: any) {
-      console.error('Verify OTP error:', error);
-      alert("Invalid OTP. Please try again.");
-    } finally {
-      setIsLoading(false);
     }
+
+    const userData = localStorage.getItem(`melody_user_${phone}`);
+    if (userData) {
+      localStorage.setItem("melody_current_user", userData);
+      router.push("/customer");
+    } else {
+      alert("User not found. Please register.");
+      setMode("register");
+      setStep("phone");
+    }
+    
+    setIsLoading(false);
   };
 
   const handleRegister = async () => {
@@ -128,56 +82,20 @@ export default function AuthPage() {
 
     setIsLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
 
     const userData = {
       phone,
       name,
       address,
-      roles: ["customer"], // Default role only
+      roles: ["customer"],
       createdAt: new Date().toISOString(),
     };
 
     localStorage.setItem(`melody_user_${phone}`, JSON.stringify(userData));
     localStorage.setItem("melody_current_user", JSON.stringify(userData));
+    setIsLoading(false);
 
     alert("Registration successful! Welcome to Melody.");
-    router.push("/customer");
-  };
-
-  // Toggle a role in the selection list (adds/removes)
-  const toggleRole = (role: string) => {
-    setSelectedRoles((prev) =>
-      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
-    );
-  };
-
-  // Complete registration from the roles step: persist user with selected roles
-  const handleCompleteRegistration = async () => {
-    if (!name || !address) {
-      // If details weren't filled for some reason, bring user back
-      alert("Please complete your details first.");
-      setStep("details");
-      return;
-    }
-
-    setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
-
-    const roles = Array.from(new Set(["customer", ...selectedRoles]));
-    const userData = {
-      phone,
-      name,
-      address,
-      roles,
-      createdAt: new Date().toISOString(),
-    };
-
-    localStorage.setItem(`melody_user_${phone}`, JSON.stringify(userData));
-    localStorage.setItem("melody_current_user", JSON.stringify(userData));
-
-    alert("Registration complete! Welcome to Melody.");
     router.push("/customer");
   };
 
@@ -199,7 +117,6 @@ export default function AuthPage() {
       <div className="absolute bottom-20 right-10 w-40 h-40 bg-white/5 rounded-full blur-2xl" />
 
       <div className="relative z-10 w-full max-w-md">
-        <div id="recaptcha-container"></div>
         <Card className="shadow-2xl border border-gray-100 bg-white overflow-hidden">
           {/* Header with White Background */}
           <div className="bg-gradient-to-b from-gray-50 to-white p-4 border-b border-gray-100">
