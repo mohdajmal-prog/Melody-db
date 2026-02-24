@@ -8,35 +8,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Phone number and OTP are required' }, { status: 400 });
     }
 
-    const accountSid = process.env.TWILIO_ACCOUNT_SID;
-    const authToken = process.env.TWILIO_AUTH_TOKEN;
-    const verifySid = process.env.TWILIO_VERIFY_SERVICE_SID;
+    const authKey = process.env.MSG91_AUTH_KEY;
 
-    if (!accountSid || !authToken || !verifySid) {
-      return NextResponse.json({ error: 'Twilio configuration missing' }, { status: 500 });
+    if (!authKey) {
+      return NextResponse.json({ error: 'MSG91 configuration missing' }, { status: 500 });
     }
 
-    const response = await fetch(`https://verify.twilio.com/v2/Services/${verifySid}/VerificationCheck`, {
+    const response = await fetch(`https://control.msg91.com/api/v5/otp/verify`, {
       method: 'POST',
       headers: {
-        'Authorization': `Basic ${Buffer.from(`${accountSid}:${authToken}`).toString('base64')}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'authkey': authKey,
+        'Content-Type': 'application/json',
       },
-      body: new URLSearchParams({
-        To: `+91${phone}`,
-        Code: otp,
+      body: JSON.stringify({
+        mobile: `91${phone}`,
+        otp: otp,
       }),
     });
 
     if (!response.ok) {
       const error = await response.text();
-      console.error('Twilio verification error:', error);
+      console.error('MSG91 verification error:', error);
       return NextResponse.json({ error: 'Failed to verify OTP' }, { status: 500 });
     }
 
     const data = await response.json();
     
-    if (data.status === 'approved') {
+    if (data.type === 'success') {
       return NextResponse.json({ success: true, verified: true });
     } else {
       return NextResponse.json({ success: false, verified: false, error: 'Invalid OTP' }, { status: 400 });

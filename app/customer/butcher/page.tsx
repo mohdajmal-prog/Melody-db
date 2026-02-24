@@ -109,7 +109,6 @@ export default function ButcherServicePage() {
                     <SelectItem value="goat">Goat</SelectItem>
                     <SelectItem value="sheep">Sheep</SelectItem>
                     <SelectItem value="chicken">Chicken</SelectItem>
-                    <SelectItem value="buffalo">Buffalo</SelectItem>
                     <SelectItem value="mixed">Mixed</SelectItem>
                   </SelectContent>
                 </Select>

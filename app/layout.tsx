@@ -35,6 +35,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script src="https://www.gstatic.com/firebasejs/ui/6.0.1/firebase-ui-auth.js" async defer></script>
+      </head>
       <body className={`font-sans antialiased`}>
         {children}
         <Analytics />
