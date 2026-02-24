@@ -38,12 +38,13 @@ export default function TestFirebase() {
     addLog(`Auth instance: ${auth ? 'OK' : 'FAILED'}`);
     addLog(`Auth app name: ${auth.app.name}`);
     
-    // Initialize reCAPTCHA once on mount
+    // Initialize reCAPTCHA once on mount - CORRECT ORDER
     if (typeof window !== 'undefined' && !(window as any).recaptchaVerifier) {
       try {
         addLog("Creating reCAPTCHA verifier...");
+        // Correct: RecaptchaVerifier(auth, elementId, options)
         (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-          size: 'normal',
+          size: 'invisible',
           callback: () => addLog('reCAPTCHA solved'),
           'expired-callback': () => addLog('reCAPTCHA expired'),
         });
@@ -121,7 +122,7 @@ export default function TestFirebase() {
                   placeholder="9876543210"
                 />
               </div>
-              <div id="recaptcha-container"></div>
+              <div id="recaptcha-container" className="flex justify-center"></div>
               <button
                 onClick={handleSendOTP}
                 disabled={phone.length !== 10}
