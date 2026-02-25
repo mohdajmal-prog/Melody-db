@@ -25,6 +25,10 @@ export default function AuthPage() {
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && !auth.app) {
+      return;
+    }
+    
     if (typeof window !== 'undefined') {
       if ((window as any).recaptchaVerifier) {
         try {
@@ -34,14 +38,15 @@ export default function AuthPage() {
       
       try {
         (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-          size: 'invisible',
+          size: 'normal',
           callback: (response: any) => {
-            console.log('reCAPTCHA solved:', response);
+            console.log('reCAPTCHA solved');
           },
           'expired-callback': () => {
-            console.log('reCAPTCHA expired');
+            toast.error('reCAPTCHA expired. Please try again.');
           }
         });
+        (window as any).recaptchaVerifier.render();
       } catch (error) {
         console.error('reCAPTCHA initialization error:', error);
       }
@@ -85,28 +90,24 @@ export default function AuthPage() {
       setConfirmationResult(result);
       setStep("otp");
       
-      toast.success('OTP sent to your phone!', {
+      toast.success('OTP sent successfully!', {
         duration: 5000,
         position: "top-center",
       });
     } catch (error: any) {
       console.error('Send OTP error:', error);
-      let errorMsg = 'Failed to send OTP. ';
-      if (error.code === 'auth/invalid-app-credential') {
-        errorMsg += 'Add test phone numbers in Firebase Console: Authentication → Sign-in method → Phone → Phone numbers for testing';
-      } else if (error.code === 'auth/too-many-requests') {
-        errorMsg += 'Too many requests. Please try again later.';
-      } else {
-        errorMsg += error.message;
-      }
-      alert(errorMsg);
+      toast.error(error.message || 'Failed to send OTP', {
+        duration: 5000,
+        position: "top-center",
+      });
       
       if ((window as any).recaptchaVerifier) {
         try {
           (window as any).recaptchaVerifier.clear();
           (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-            size: 'invisible',
+            size: 'normal',
           });
+          (window as any).recaptchaVerifier.render();
         } catch (e) {}
       }
     }
@@ -130,6 +131,8 @@ export default function AuthPage() {
     try {
       await confirmationResult.confirm(otp);
       
+      toast.success('Phone verified successfully!');
+      
       if (mode === "login") {
         const userData = localStorage.getItem(`melody_user_${phone}`);
         if (userData) {
@@ -141,7 +144,7 @@ export default function AuthPage() {
       }
     } catch (error: any) {
       console.error('Verify OTP error:', error);
-      alert("Invalid OTP. Please try again.");
+      toast.error('Invalid OTP. Please try again.');
     }
     
     setIsLoading(false);
@@ -223,7 +226,11 @@ export default function AuthPage() {
       <div className="absolute bottom-20 right-10 w-40 h-40 bg-white/5 rounded-full blur-2xl" />
 
       <div className="relative z-10 w-full max-w-[280px]">
-        <div id="recaptcha-container"></div>
+        {step === "phone" && (
+          <div className="mb-4 flex justify-center">
+            <div id="recaptcha-container"></div>
+          </div>
+        )}
 
         <Card className="shadow-2xl border border-gray-100 bg-white overflow-hidden">
           {/* Header with White Background */}
