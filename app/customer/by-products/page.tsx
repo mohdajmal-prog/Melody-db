@@ -13,63 +13,64 @@ const byProductsData = {
   meat: {
     title: "Meats",
     products: [
-      { id: 1, name: "Ready to Cook Mutton", price: 650, unit: "kg", image: "https://images.unsplash.com/photo-1588347818036-8fc8be0e4c5f?w=800&h=600&fit=crop&q=80", farmer: "Raju Goats", village: "Chevella", distance: 12, rating: 4.8 },
-      { id: 2, name: "Ready to Cook Chicken", price: 280, unit: "kg", image: "https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=800&h=600&fit=crop&q=80", farmer: "Lakshmi Farms", village: "Shankarpally", distance: 8, rating: 4.9 },
-      { id: 3, name: "Marinated Meat", price: 700, unit: "kg", image: "https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=800&h=600&fit=crop&q=80", farmer: "Raju Goats", village: "Chevella", distance: 12, rating: 4.8 },
-      { id: 4, name: "Curry Cut Meat", price: 680, unit: "kg", image: "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=800&h=600&fit=crop&q=80", farmer: "Raju Goats", village: "Chevella", distance: 12, rating: 4.8 },
+      { id: 1, name: "Ready to Cook Mutton", price: 700, unit: "kg", image: "https://ae.freshtohome.com/blog/wp-content/uploads/2024/08/CookMuttonfaster3.png", farmer: "Raju Goats", village: "Chevella", distance: 12, rating: 4.8 },
+      { id: 2, name: "Ready to Cook Chicken", price: 320, unit: "kg", image: "https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=800&h=600&fit=crop&q=80", farmer: "Lakshmi Farms", village: "Shankarpally", distance: 8, rating: 4.9 },
+      { id: 3, name: "Marinated Meat", price: 750, unit: "kg", image: "https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=800&h=600&fit=crop&q=80", farmer: "Raju Goats", village: "Chevella", distance: 12, rating: 4.8 },
+      { id: 4, name: "Curry Cut Meat", price: 720, unit: "kg", image: "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=800&h=600&fit=crop&q=80", farmer: "Raju Goats", village: "Chevella", distance: 12, rating: 4.8 },
     ]
   },
   vegetables: {
     title: "Vegetables",
     products: [
-      { id: 1, name: "Dried Tomatoes", price: 320, unit: "kg", image: "https://images.unsplash.com/photo-1607305387299-a3d9611cd469?w=800&h=600&fit=crop&q=80", farmer: "Organic Dried Vegetables", village: "Zaheerabad", distance: 28, rating: 4.5 },
-      { id: 2, name: "Dried Leafy Greens", price: 350, unit: "kg", image: "https://images.unsplash.com/photo-1622205313162-be1d5712a43f?w=800&h=600&fit=crop&q=80", farmer: "Organic Dried Vegetables", village: "Zaheerabad", distance: 28, rating: 4.5 },
-      { id: 3, name: "Dried Onions", price: 280, unit: "kg", image: "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?w=800&h=600&fit=crop&q=80", farmer: "Organic Dried Vegetables", village: "Zaheerabad", distance: 28, rating: 4.5 },
-      { id: 4, name: "Dried Garlic", price: 420, unit: "kg", image: "https://images.unsplash.com/photo-1566843972142-a7a0945148d8?w=800&h=600&fit=crop&q=80", farmer: "Organic Dried Vegetables", village: "Zaheerabad", distance: 28, rating: 4.5 },
-      { id: 5, name: "Dried Carrots", price: 300, unit: "kg", image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=800&h=600&fit=crop&q=80", farmer: "Organic Dried Vegetables", village: "Zaheerabad", distance: 28, rating: 4.5 },
-      { id: 6, name: "Dried Beetroot", price: 340, unit: "kg", image: "https://images.unsplash.com/photo-1550258987-190a2d41a8ba?w=800&h=600&fit=crop&q=80", farmer: "Organic Dried Vegetables", village: "Zaheerabad", distance: 28, rating: 4.5 },
+      { id: 1, name: "Dried Tomatoes", price: 400, unit: "kg", image: "https://nutritionustad.com/wp-content/uploads/make-dried-dried-tomatoes-at-home-1.jpg", farmer: "Organic Dried Vegetables", village: "Zaheerabad", distance: 28, rating: 4.5 },
+      { id: 2, name: "Dried Leafy Greens", price: 450, unit: "kg", image: "https://images.unsplash.com/photo-1622205313162-be1d5712a43f?w=800&h=600&fit=crop&q=80", farmer: "Organic Dried Vegetables", village: "Zaheerabad", distance: 28, rating: 4.5 },
+      { id: 3, name: "Dried Onions", price: 350, unit: "kg", image: "https://thumbs.dreamstime.com/b/dried-onions-some-bowl-37187147.jpg", farmer: "Organic Dried Vegetables", village: "Zaheerabad", distance: 28, rating: 4.5 },
+      { id: 4, name: "Dried Garlic", price: 500, unit: "kg", image: "https://tse3.mm.bing.net/th/id/OIP.W2ZemJZaN5gNlYDf4RVo7QHaHa?pid=Api&P=0&h=180", farmer: "Organic Dried Vegetables", village: "Zaheerabad", distance: 28, rating: 4.5 },
+      { id: 5, name: "Dried Carrots", price: 380, unit: "kg", image: "https://thisnoshtalgiclife.com/wp-content/uploads/2023/06/carrots_shredded_dehydrated.jpeg", farmer: "Organic Dried Vegetables", village: "Zaheerabad", distance: 28, rating: 4.5 },
+      { id: 6, name: "Dried Beetroot", price: 420, unit: "kg", image: "https://tse4.mm.bing.net/th/id/OIP.KS4RCMkCFgaOqtqmKwFKtgHaEI?pid=Api&P=0&h=180", farmer: "Organic Dried Vegetables", village: "Zaheerabad", distance: 28, rating: 4.5 },
     ]
   },
   "dried-fruits": {
     title: "Dried Fruits",
     products: [
-      { id: 1, name: "Dried Mango", price: 350, unit: "kg", image: "https://images.unsplash.com/photo-1591206369811-4eeb2f03bc95?w=800&h=600&fit=crop&q=80", farmer: "Dried Fruits Farm", village: "Anantapur", distance: 32, rating: 4.6 },
-      { id: 2, name: "Dried Banana", price: 280, unit: "kg", image: "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=800&h=600&fit=crop&q=80", farmer: "Dried Fruits Farm", village: "Anantapur", distance: 32, rating: 4.6 },
-      { id: 3, name: "Dried Papaya", price: 320, unit: "kg", image: "https://images.unsplash.com/photo-1617112848923-cc2234396a8d?w=800&h=600&fit=crop&q=80", farmer: "Dried Fruits Farm", village: "Anantapur", distance: 32, rating: 4.6 },
-      { id: 4, name: "Dried Figs", price: 550, unit: "kg", image: "https://images.unsplash.com/photo-1628408891099-4c8f0e8d0e1e?w=800&h=600&fit=crop&q=80", farmer: "Dried Fruits Farm", village: "Anantapur", distance: 32, rating: 4.6 },
-      { id: 5, name: "Dried Dates", price: 480, unit: "kg", image: "https://images.unsplash.com/photo-1584278221574-e9a0c7e7f8e3?w=800&h=600&fit=crop&q=80", farmer: "Dried Fruits Farm", village: "Anantapur", distance: 32, rating: 4.6 },
-      { id: 6, name: "Dried Apricots", price: 520, unit: "kg", image: "https://images.unsplash.com/photo-1623065422902-30a2d299bbe4?w=800&h=600&fit=crop&q=80", farmer: "Dried Fruits Farm", village: "Anantapur", distance: 32, rating: 4.6 },
-      { id: 7, name: "Raisins", price: 240, unit: "kg", image: "https://images.unsplash.com/photo-1587411768941-fc3e1b7e8f02?w=800&h=600&fit=crop&q=80", farmer: "Dried Fruits Farm", village: "Anantapur", distance: 32, rating: 4.6 },
-      { id: 8, name: "Dried Pineapple", price: 380, unit: "kg", image: "https://images.unsplash.com/photo-1550258987-190a2d41a8ba?w=800&h=600&fit=crop&q=80", farmer: "Dried Fruits Farm", village: "Anantapur", distance: 32, rating: 4.6 },
+      { id: 1, name: "Dried Mango", price: 450, unit: "kg", image: "https://images.unsplash.com/photo-1591206369811-4eeb2f03bc95?w=800&h=600&fit=crop&q=80", farmer: "Dried Fruits Farm", village: "Anantapur", distance: 32, rating: 4.6 },
+      { id: 2, name: "Dried Banana", price: 380, unit: "kg", image: "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=800&h=600&fit=crop&q=80", farmer: "Dried Fruits Farm", village: "Anantapur", distance: 32, rating: 4.6 },
+      { id: 3, name: "Dried Papaya", price: 420, unit: "kg", image: "https://images.unsplash.com/photo-1617112848923-cc2234396a8d?w=800&h=600&fit=crop&q=80", farmer: "Dried Fruits Farm", village: "Anantapur", distance: 32, rating: 4.6 },
+      { id: 4, name: "Dried Figs", price: 800, unit: "kg", image: "https://tse4.mm.bing.net/th/id/OIP.vcdS6rBoY15imc7Md4oWKQHaE8?pid=Api&P=0&h=180", farmer: "Dried Fruits Farm", village: "Anantapur", distance: 32, rating: 4.6 },
+      { id: 5, name: "Dried Dates", price: 650, unit: "kg", image: "https://tse1.mm.bing.net/th/id/OIP.JsJcNd6MzOcY99qQ42O5DAHaDj?pid=Api&P=0&h=180", farmer: "Dried Fruits Farm", village: "Anantapur", distance: 32, rating: 4.6 },
+      { id: 6, name: "Dried Apricots", price: 750, unit: "kg", image: "https://tse1.mm.bing.net/th/id/OIP.wkjqe1i4PZ4P9_EkXe2gYAHaHa?pid=Api&P=0&h=180", farmer: "Dried Fruits Farm", village: "Anantapur", distance: 32, rating: 4.6 },
+      { id: 7, name: "Raisins", price: 350, unit: "kg", image: "https://tse1.mm.bing.net/th/id/OIP.E6qWlr3wxQJE7vCsV7WOkQHaF6?pid=Api&P=0&h=180", farmer: "Dried Fruits Farm", village: "Anantapur", distance: 32, rating: 4.6 },
+      { id: 8, name: "Dried Pineapple", price: 480, unit: "kg", image: "https://images.unsplash.com/photo-1550258987-190a2d41a8ba?w=800&h=600&fit=crop&q=80", farmer: "Dried Fruits Farm", village: "Anantapur", distance: 32, rating: 4.6 },
     ]
   },
   eggs: {
     title: "Country Eggs",
     products: [
-      { id: 1, name: "Country Eggs", price: 7, unit: "piece", image: "https://images.unsplash.com/photo-1518569656558-1f25e69d93d7?w=800&h=600&fit=crop&q=80", farmer: "Country Eggs Farm", village: "Pargi", distance: 19, rating: 4.8 },
-      { id: 2, name: "Duck Eggs", price: 10, unit: "piece", image: "https://images.unsplash.com/photo-1569288063643-5d29ad64df09?w=800&h=600&fit=crop&q=80", farmer: "Country Eggs Farm", village: "Pargi", distance: 19, rating: 4.8 },
+      { id: 1, name: "Country Eggs", price: 8, unit: "piece", image: "https://tse3.mm.bing.net/th/id/OIP.Ork-g1I4QTeSHinQ3b2ZogHaE8?pid=Api&P=0&h=180", farmer: "Country Eggs Farm", village: "Pargi", distance: 19, rating: 4.8 },
+      { id: 2, name: "Duck Eggs", price: 12, unit: "piece", image: "https://tse2.mm.bing.net/th/id/OIP.lqHT7E4LLX5kAa3cRz8R-QHaEv?pid=Api&P=0&h=180", farmer: "Country Eggs Farm", village: "Pargi", distance: 19, rating: 4.8 },
+      { id: 3, name: "Broiler Eggs", price: 6, unit: "piece", image: "https://tse3.mm.bing.net/th/id/OIP.EIxTzYFkKbfs6paHxGbCKwHaEK?pid=Api&P=0&h=180", farmer: "Country Eggs Farm", village: "Pargi", distance: 19, rating: 4.8 },
     ]
   },
   "dried-fish": {
     title: "Dried Fish",
     products: [
-      { id: 1, name: "Dried Bombil", price: 280, unit: "kg", image: "https://images.unsplash.com/photo-1534604973900-c43ab4c2e0ab?w=800&h=600&fit=crop&q=80", farmer: "Coastal Dried Fish", village: "Nellore", distance: 35, rating: 4.7 },
-      { id: 2, name: "Dried Anchovy", price: 220, unit: "kg", image: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&h=600&fit=crop&q=80", farmer: "Coastal Dried Fish", village: "Nellore", distance: 35, rating: 4.7 },
-      { id: 3, name: "Dried Mackerel", price: 320, unit: "kg", image: "https://images.unsplash.com/photo-1544943910-4c1dc44aab44?w=800&h=600&fit=crop&q=80", farmer: "Coastal Dried Fish", village: "Nellore", distance: 35, rating: 4.7 },
-      { id: 4, name: "Dried Prawns", price: 450, unit: "kg", image: "https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?w=800&h=600&fit=crop&q=80", farmer: "Coastal Dried Fish", village: "Nellore", distance: 35, rating: 4.7 },
-      { id: 5, name: "Dried Sardines", price: 250, unit: "kg", image: "https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?w=800&h=600&fit=crop&q=80", farmer: "Coastal Dried Fish", village: "Nellore", distance: 35, rating: 4.7 },
-      { id: 6, name: "Dried Ribbon Fish", price: 350, unit: "kg", image: "https://images.unsplash.com/photo-1535591273668-578e31182c4f?w=800&h=600&fit=crop&q=80", farmer: "Coastal Dried Fish", village: "Nellore", distance: 35, rating: 4.7 },
+      { id: 1, name: "Dried Bombil", price: 350, unit: "kg", image: "https://tse1.mm.bing.net/th/id/OIP.3Z90C3W287h0wGucc1puugHaDt?pid=Api&P=0&h=180", farmer: "Coastal Dried Fish", village: "Nellore", distance: 35, rating: 4.7 },
+      { id: 2, name: "Dried Anchovy", price: 280, unit: "kg", image: "https://tse4.mm.bing.net/th/id/OIP.BhgFds94WePSnPN_sfY08gHaFP?pid=Api&P=0&h=180", farmer: "Coastal Dried Fish", village: "Nellore", distance: 35, rating: 4.7 },
+      { id: 3, name: "Dried Mackerel", price: 400, unit: "kg", image: "https://thumbs.dreamstime.com/b/dried-mackerel-fish-outdoor-58488838.jpg", farmer: "Coastal Dried Fish", village: "Nellore", distance: 35, rating: 4.7 },
+      { id: 4, name: "Dried Prawns", price: 600, unit: "kg", image: "https://tse4.mm.bing.net/th/id/OIP.wolX2HDvldAwH8rZ14djcAHaE6?pid=Api&P=0&h=180", farmer: "Coastal Dried Fish", village: "Nellore", distance: 35, rating: 4.7 },
+      { id: 5, name: "Dried Sardines", price: 320, unit: "kg", image: "https://tse4.mm.bing.net/th/id/OIP.WrViAVhKHTfDL424YaMsMAHaEK?pid=Api&P=0&h=180", farmer: "Coastal Dried Fish", village: "Nellore", distance: 35, rating: 4.7 },
+      { id: 6, name: "Dried Ribbon Fish", price: 450, unit: "kg", image: "https://tse4.mm.bing.net/th/id/OIP.7TW6i7A0WiVjtOMymDVPWgHaFc?pid=Api&P=0&h=180", farmer: "Coastal Dried Fish", village: "Nellore", distance: 35, rating: 4.7 },
     ]
   },
   dairy: {
     title: "Dairy Products",
     products: [
-      { id: 1, name: "Organic Ghee", price: 600, unit: "kg", image: "https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=800&h=600&fit=crop&q=80", farmer: "Pure Dairy Farms", village: "Sangareddy", distance: 18, rating: 4.8 },
-      { id: 2, name: "Fresh Paneer", price: 400, unit: "kg", image: "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=800&h=600&fit=crop&q=80", farmer: "Pure Dairy Farms", village: "Sangareddy", distance: 18, rating: 4.8 },
-      { id: 3, name: "Natural Yogurt", price: 70, unit: "kg", image: "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=800&h=600&fit=crop&q=80", farmer: "Pure Dairy Farms", village: "Sangareddy", distance: 18, rating: 4.8 },
-      { id: 4, name: "Farm Cheese", price: 500, unit: "kg", image: "https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=800&h=600&fit=crop&q=80", farmer: "Pure Dairy Farms", village: "Sangareddy", distance: 18, rating: 4.8 },
-      { id: 5, name: "Fresh Butter", price: 450, unit: "kg", image: "https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=800&h=600&fit=crop&q=80", farmer: "Pure Dairy Farms", village: "Sangareddy", distance: 18, rating: 4.8 },
-      { id: 6, name: "Buttermilk", price: 40, unit: "liter", image: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=800&h=600&fit=crop&q=80", farmer: "Pure Dairy Farms", village: "Sangareddy", distance: 18, rating: 4.8 },
+      { id: 1, name: "Organic Ghee", price: 650, unit: "kg", image: "https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=800&h=600&fit=crop&q=80", farmer: "Pure Dairy Farms", village: "Sangareddy", distance: 18, rating: 4.8 },
+      { id: 2, name: "Fresh Paneer", price: 450, unit: "kg", image: "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=800&h=600&fit=crop&q=80", farmer: "Pure Dairy Farms", village: "Sangareddy", distance: 18, rating: 4.8 },
+      { id: 3, name: "Natural Yogurt", price: 80, unit: "kg", image: "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=800&h=600&fit=crop&q=80", farmer: "Pure Dairy Farms", village: "Sangareddy", distance: 18, rating: 4.8 },
+      { id: 4, name: "Farm Cheese", price: 550, unit: "kg", image: "https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=800&h=600&fit=crop&q=80", farmer: "Pure Dairy Farms", village: "Sangareddy", distance: 18, rating: 4.8 },
+      { id: 5, name: "Fresh Butter", price: 500, unit: "kg", image: "https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=800&h=600&fit=crop&q=80", farmer: "Pure Dairy Farms", village: "Sangareddy", distance: 18, rating: 4.8 },
+      { id: 6, name: "Buttermilk", price: 50, unit: "liter", image: "https://tse2.mm.bing.net/th/id/OIP.7tDappt0C1lQ7YOujY42oAHaE7?pid=Api&P=0&h=180", farmer: "Pure Dairy Farms", village: "Sangareddy", distance: 18, rating: 4.8 },
     ]
   }
 };
@@ -96,7 +97,7 @@ export default function ByProductsPage() {
   };
 
   const handleBack = () => {
-    router.push('/customer');
+    router.push('/customer?screen=1');
   };
 
   return (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +44,7 @@ import { SortDropdown } from "@/components/sort-dropdown";
 
 export default function CustomerPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
@@ -53,6 +54,13 @@ export default function CustomerPage() {
   const [currentScreen, setCurrentScreen] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
+
+  useEffect(() => {
+    const screen = searchParams.get('screen');
+    if (screen) {
+      setCurrentScreen(parseInt(screen));
+    }
+  }, [searchParams]);
 
   const bannerImages = [
     "/banner-1.jpeg",
@@ -161,8 +169,8 @@ export default function CustomerPage() {
     { id: "vegetables", name: "Vegetables", image: "/veg.jpeg", bgColor: "#d1f4e0", items: ["Dried Tomatoes", "Dried Leafy Greens", "Dehydrated Vegetables", "Sun-Dried Veggies"] },
     { id: "dried-fruits", name: "Dried Fruits", image: "/fruits.jpeg", bgColor: "#d1f4e0" },
     { id: "eggs", name: "Country Eggs", image: "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=400&h=300&fit=crop", bgColor: "#d1f4e0" },
-    { id: "dried-fish", name: "Dried Fish", image: "https://images.unsplash.com/photo-1534604973900-c43ab4c2e0ab?w=400&h=300&fit=crop", bgColor: "#d1f4e0" },
-    { id: "dairy", name: "Dairy Products", image: "https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=400&h=300&fit=crop", bgColor: "#d1f4e0", items: ["Organic Ghee", "Fresh Paneer", "Natural Yogurt", "Farm Cheese", "Fresh Butter", "Buttermilk"] },
+    { id: "dried-fish", name: "Dried Fish", image: "/fish.jpeg", bgColor: "#d1f4e0" },
+    { id: "dairy", name: "Dairy Products", image: "/milk.jpeg", bgColor: "#d1f4e0", items: ["Organic Ghee", "Fresh Paneer", "Natural Yogurt", "Farm Cheese", "Fresh Butter", "Buttermilk"] },
   ];
 
   const categories = [
@@ -772,7 +780,7 @@ export default function CustomerPage() {
             bulkAvailable: false,
           },
         ],
-        image: "https://images.unsplash.com/photo-1534604973900-c43ab4c2e0ab?w=800&h=600&fit=crop",
+        image: "/fish.jpeg",
       },
     ],
     []
@@ -1215,36 +1223,16 @@ export default function CustomerPage() {
           )}
 
           {/* Screen Indicators */}
-          <div className="flex justify-center items-center gap-4 mt-4">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setCurrentScreen(Math.max(0, currentScreen - 1))}
-              disabled={currentScreen === 0}
-              className="bg-white"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-            </Button>
-            <div className="flex gap-2">
-              {[0, 1, 2].map((screen) => (
-                <button
-                  key={screen}
-                  onClick={() => setCurrentScreen(screen)}
-                  className={`h-2 rounded-full transition-all cursor-pointer ${
-                    currentScreen === screen ? "w-8 bg-primary" : "w-2 bg-gray-300 hover:bg-gray-400"
-                  }`}
-                />
-              ))}
-            </div>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setCurrentScreen(Math.min(2, currentScreen + 1))}
-              disabled={currentScreen === 2}
-              className="bg-white"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-            </Button>
+          <div className="flex justify-center items-center gap-2 mt-4">
+            {[0, 1, 2].map((screen) => (
+              <button
+                key={screen}
+                onClick={() => setCurrentScreen(screen)}
+                className={`h-2 rounded-full transition-all cursor-pointer ${
+                  currentScreen === screen ? "w-8 bg-primary" : "w-2 bg-gray-300 hover:bg-gray-400"
+                }`}
+              />
+            ))}
           </div>
         </div>
       </div>

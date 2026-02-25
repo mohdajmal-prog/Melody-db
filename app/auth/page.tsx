@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,8 +9,6 @@ import { Label } from "@/components/ui/label";
 import { Sprout, ArrowLeft, ShieldCheck, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { auth } from "@/lib/firebase";
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from "firebase/auth";
 
 export default function AuthPage() {
   const router = useRouter();
@@ -22,44 +20,6 @@ export default function AuthPage() {
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined' && !auth.app) {
-      return;
-    }
-    
-    if (typeof window !== 'undefined') {
-      if ((window as any).recaptchaVerifier) {
-        try {
-          (window as any).recaptchaVerifier.clear();
-        } catch (e) {}
-      }
-      
-      try {
-        (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-          size: 'normal',
-          callback: (response: any) => {
-            console.log('reCAPTCHA solved');
-          },
-          'expired-callback': () => {
-            toast.error('reCAPTCHA expired. Please try again.');
-          }
-        });
-        (window as any).recaptchaVerifier.render();
-      } catch (error) {
-        console.error('reCAPTCHA initialization error:', error);
-      }
-    }
-    
-    return () => {
-      if ((window as any).recaptchaVerifier) {
-        try {
-          (window as any).recaptchaVerifier.clear();
-        } catch (e) {}
-      }
-    };
-  }, []);
 
   const handleSendOTP = async () => {
     if (phone.length !== 10) {
@@ -79,57 +39,57 @@ export default function AuthPage() {
     }
     
     try {
-      const phoneNumber = `+91${phone}`;
-      const appVerifier = (window as any).recaptchaVerifier;
+      const response = await fetch('/api/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone })
+      });
       
-      if (!appVerifier) {
-        throw new Error('reCAPTCHA not initialized');
-      }
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
       
-      const result = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
-      setConfirmationResult(result);
       setStep("otp");
       
-      toast.success('OTP sent successfully!', {
-        duration: 5000,
-        position: "top-center",
-      });
-    } catch (error: any) {
-      console.error('Send OTP error:', error);
-      toast.error(error.message || 'Failed to send OTP', {
-        duration: 5000,
-        position: "top-center",
-      });
-      
-      if ((window as any).recaptchaVerifier) {
-        try {
-          (window as any).recaptchaVerifier.clear();
-          (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-            size: 'normal',
-          });
-          (window as any).recaptchaVerifier.render();
-        } catch (e) {}
+      if (data.otp) {
+        toast(
+          <div className="flex flex-col gap-0 text-[13px] leading-tight">
+            <div className="font-semibold text-gray-900 mb-1">Melody OTP</div>
+            <div className="text-gray-700">
+              Your OTP is <span className="font-bold text-gray-900">{data.otp}</span>. Valid for 10 minutes.
+            </div>
+            <div className="text-[11px] text-gray-500 mt-1.5 pt-1.5 border-t border-gray-200">
+              +91{phone} • {new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+            </div>
+          </div>,
+          { duration: 10000, position: "top-center" }
+        );
+      } else {
+        toast.success('OTP sent successfully!');
       }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to send OTP');
     }
     
     setIsLoading(false);
   };
 
   const handleVerifyOTP = async () => {
-    if (otp.length !== 6) {
-      alert("Please enter a valid 6-digit OTP");
-      return;
-    }
-
-    if (!confirmationResult) {
-      alert("Please request OTP first");
+    if (!otp || otp.length !== 6) {
+      toast.error("Please enter a valid 6-digit OTP");
       return;
     }
 
     setIsLoading(true);
     
     try {
-      await confirmationResult.confirm(otp);
+      const response = await fetch('/api/send-otp', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, otp })
+      });
+      
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
       
       toast.success('Phone verified successfully!');
       
@@ -143,8 +103,7 @@ export default function AuthPage() {
         setStep("details");
       }
     } catch (error: any) {
-      console.error('Verify OTP error:', error);
-      toast.error('Invalid OTP. Please try again.');
+      toast.error(error.message || 'Invalid OTP');
     }
     
     setIsLoading(false);
@@ -226,11 +185,6 @@ export default function AuthPage() {
       <div className="absolute bottom-20 right-10 w-40 h-40 bg-white/5 rounded-full blur-2xl" />
 
       <div className="relative z-10 w-full max-w-[280px]">
-        {step === "phone" && (
-          <div className="mb-4 flex justify-center">
-            <div id="recaptcha-container"></div>
-          </div>
-        )}
 
         <Card className="shadow-2xl border border-gray-100 bg-white overflow-hidden">
           {/* Header with White Background */}
@@ -380,44 +334,8 @@ export default function AuthPage() {
 
                 <Button
                   variant="ghost"
-                  onClick={() => {
-                    const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
-                    setGeneratedOtp(newOtp);
-                    const fullPhoneNumber = `+91${phone}`;
-                    
-                    const welcomeMessage = mode === "login" 
-                      ? "Welcome Back! 👋" 
-                      : "Welcome to Melody! 🌱";
-                    
-                    toast(
-                      <div className="flex flex-col gap-0 text-[13px] leading-tight">
-                        <div className="font-semibold text-gray-900 mb-1">Melody</div>
-                        <div className="text-gray-700">
-                          Your OTP is <span className="font-bold text-gray-900">{newOtp}</span>. Valid for 10 minutes. Do not share this code with anyone.
-                        </div>
-                        <div className="text-[11px] text-gray-500 mt-1.5 pt-1.5 border-t border-gray-200">
-                          {fullPhoneNumber} • {new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-                        </div>
-                      </div>,
-                      {
-                        duration: 10000,
-                        position: "top-center" as const,
-                        style: {
-                          background: 'white',
-                          border: '1px solid #e5e7eb',
-                          padding: '12px 16px',
-                          borderRadius: '8px',
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                          maxWidth: '280px',
-                          marginTop: '20px',
-                          marginLeft: 'auto',
-                          marginRight: 'auto',
-                          left: '50%',
-                          transform: 'translateX(-50%)',
-                        },
-                      }
-                    );
-                  }}
+                  onClick={handleSendOTP}
+                  disabled={isLoading}
                   className="w-full text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                   size="sm"
                 >
